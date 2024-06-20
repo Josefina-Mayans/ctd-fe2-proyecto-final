@@ -32,7 +32,7 @@ function Cita() {
       <Input
         aria-label="Author Cita"
         value={valorInput}
-        onChange={(e) => setValorInput(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValorInput(e.target.value)}
         placeholder="Ingresa el nombre del autor"
       />
       <Boton

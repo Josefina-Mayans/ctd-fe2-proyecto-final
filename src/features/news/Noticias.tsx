@@ -1,26 +1,18 @@
 import { useEffect, useState } from "react";
-import { SuscribeImage, CloseButton as Close } from "../../assets";
 import { obtenerNoticias } from "./fakeRest";
+import NoticiaCard from "./NoticiaCard"
+import React from 'react';
 import {
-  CloseButton,
-  TarjetaModal,
-  ContenedorModal,
-  DescripcionModal,
-  ImagenModal,
-  TituloModal,
-  TarjetaNoticia,
-  FechaTarjetaNoticia,
-  DescripcionTarjetaNoticia,
-  ImagenTarjetaNoticia,
-  TituloTarjetaNoticia,
   ContenedorNoticias,
   ListaNoticias,
-  TituloNoticias,
-  BotonLectura,
-  BotonSuscribir,
-  CotenedorTexto,
+  TituloNoticias
 } from "./styled";
+import { NoticiaModalPremium } from "./NoticiaModalPremium";
+import { NoticiaModalLibre } from "./NoticiaModalLibre";
 
+/**
+ * Interface para normalizar la data de noticias.
+ */
 export interface INoticiasNormalizadas {
   id: number;
   titulo: string;
@@ -31,39 +23,57 @@ export interface INoticiasNormalizadas {
   descripcionCorta?: string;
 }
 
+/**
+ * Componente que muestra una lista de noticias.
+ */
 const Noticias = () => {
   const [noticias, setNoticias] = useState<INoticiasNormalizadas[]>([]);
   const [modal, setModal] = useState<INoticiasNormalizadas | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    /**
+    * Trae data de noticias de la API y actualiza el estado.
+    */
     const obtenerInformacion = async () => {
-      const respuesta = await obtenerNoticias();
+      try {
+        const respuesta = await obtenerNoticias();
 
-      const data = respuesta.map((n) => {
-        const titulo = n.titulo
-          .split(" ")
-          .map((str) => {
-            return str.charAt(0).toUpperCase() + str.slice(1);
-          })
-          .join(" ");
+        const data = respuesta.map((n) => {
+          /**
+          * Transforma la primera letra de cada palabra en un string a mayusculas.
+          * @param title - El string para pasar a mayusculas.
+          * @returns El string transformado a mayusculas.
+          */
+          const capitalizeTitle = (title: string) => {
+            return title
+              .split(" ")
+              .map((str) => {
+                return str.charAt(0).toUpperCase() + str.slice(1);
+              })
+              .join(" ");
+          };
 
-        const ahora = new Date();
-        const minutosTranscurridos = Math.floor(
-          (ahora.getTime() - n.fecha.getTime()) / 60000
-        );
+          const ahora = new Date();
+          const minutosTranscurridos = Math.floor(
+            (ahora.getTime() - n.fecha.getTime()) / 60000
+          );
 
-        return {
-          id: n.id,
-          titulo,
-          descripcion: n.descripcion,
-          fecha: `Hace ${minutosTranscurridos} minutos`,
-          esPremium: n.esPremium,
-          imagen: n.imagen,
-          descripcionCorta: n.descripcion.substring(0, 100),
-        };
-      });
+          return {
+            id: n.id,
+            titulo: capitalizeTitle(n.titulo),
+            descripcion: n.descripcion,
+            fecha: `Hace ${minutosTranscurridos} minutos`,
+            esPremium: n.esPremium,
+            imagen: n.imagen,
+            descripcionCorta: n.descripcion.substring(0, 100),
+          };
+        });
 
-      setNoticias(data);
+        setNoticias(data);
+      } catch (error) {
+        setError("Ocurrió un error al obtener las noticias");
+      }
     };
 
     obtenerInformacion();
@@ -72,63 +82,32 @@ const Noticias = () => {
   return (
     <ContenedorNoticias>
       <TituloNoticias>Noticias de los Simpsons</TituloNoticias>
-      <ListaNoticias>
-        {noticias.map((n) => (
-          <TarjetaNoticia>
-            <ImagenTarjetaNoticia src={n.imagen} />
-            <TituloTarjetaNoticia>{n.titulo}</TituloTarjetaNoticia>
-            <FechaTarjetaNoticia>{n.fecha}</FechaTarjetaNoticia>
-            <DescripcionTarjetaNoticia>
-              {n.descripcionCorta}
-            </DescripcionTarjetaNoticia>
-            <BotonLectura onClick={() => setModal(n)}>Ver más</BotonLectura>
-          </TarjetaNoticia>
-        ))}
-        {modal ? (
-          modal.esPremium ? (
-            <ContenedorModal>
-              <TarjetaModal>
-                <CloseButton onClick={() => setModal(null)}>
-                  <img src={Close} alt="close-button" />
-                </CloseButton>
-                <ImagenModal src={SuscribeImage} alt="mr-burns-excelent" />
-                <CotenedorTexto>
-                  <TituloModal>Suscríbete a nuestro Newsletter</TituloModal>
-                  <DescripcionModal>
-                    Suscríbete a nuestro newsletter y recibe noticias de
-                    nuestros personajes favoritos.
-                  </DescripcionModal>
-                  <BotonSuscribir
-                    onClick={() =>
-                      setTimeout(() => {
-                        alert("Suscripto!");
-                        setModal(null);
-                      }, 1000)
-                    }
-                  >
-                    Suscríbete
-                  </BotonSuscribir>
-                </CotenedorTexto>
-              </TarjetaModal>
-            </ContenedorModal>
-          ) : (
-            <ContenedorModal>
-              <TarjetaModal>
-                <CloseButton onClick={() => setModal(null)}>
-                  <img src={Close} alt="close-button" />
-                </CloseButton>
-                <ImagenModal src={modal.imagen} alt="news-image" />
-                <CotenedorTexto>
-                  <TituloModal>{modal.titulo}</TituloModal>
-                  <DescripcionModal>{modal.descripcion}</DescripcionModal>
-                </CotenedorTexto>
-              </TarjetaModal>
-            </ContenedorModal>
-          )
-        ) : null}
-      </ListaNoticias>
+      {error ? (
+        <div>{error}</div>
+      ) : (
+        <ListaNoticias>
+          {noticias.map((n) => (
+            <NoticiaCard key={n.id} n={n} setModal={setModal} />
+          ))}
+          {modal ? (
+            modal.esPremium ? (
+              <NoticiaModalPremium setModal={setModal} />
+            ) : (
+              <NoticiaModalLibre modal={modal} setModal={setModal} />
+            )
+          ) : null}
+        </ListaNoticias>
+      )}
     </ContenedorNoticias>
   );
 };
+
+
+//Al refactorizar el código para que sea más fácil de leer y mantener, se crearon tres componentes adicionales: NoticiaCard, NoticiaModalLibre y NoticiaModalPremium. 
+//NoticiaCard se encarga de mostrar la información de una noticia en una tarjeta, 
+//mientras que NoticiaModalLibre y NoticiaModalPremium se encargan de mostrar la información de una noticia en un modal, dependiendo de si la noticia es premium o no. 
+//Estos componentes se importan y se utilizan en el componente principal Noticias. 
+//Eso sigue el principio de responsabilidad única y facilita la reutilización de componentes en otras partes de la aplicación, 
+//por lo cual tambien sigue el principio de abierto-cerrado.
 
 export default Noticias;

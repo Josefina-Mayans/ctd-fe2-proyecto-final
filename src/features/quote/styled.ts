@@ -1,4 +1,6 @@
 import styled, { css } from "styled-components";
+import { InputCita } from "./types";
+
 
 export const ContenedorCita = styled.div`
   display: flex;
@@ -33,7 +35,7 @@ export const AutorCita = styled.p`
   min-height: 3rem;
 `;
 
-export const Input = styled.input`
+export const Input = styled.input<InputCita>`
   width: 60%;
   height: 50px;
   border-radius: 5px;
@@ -44,7 +46,13 @@ export const Input = styled.input`
   font-family: "Homer Simpson Revised", sans-serif;
 `;
 
-export const Boton = styled.button<{ secondary?: boolean }>`
+export interface ButtonProps {
+  secondary?: boolean;
+  children: React.ReactNode;
+  onClick: () => void;
+}
+
+export const Boton = styled.button<ButtonProps>`
   width: 45%;
   min-width: 250px;
   height: 50px;
@@ -76,4 +84,4 @@ export const Boton = styled.button<{ secondary?: boolean }>`
             -2px -2px 0 #000000, 2px 0px 0 #000000, 0px 2px 0 #000000,
             -2px 0px 0 #000000, 0px -2px 0 #000000;
         `}
-`;
+` as React.FC<ButtonProps>;

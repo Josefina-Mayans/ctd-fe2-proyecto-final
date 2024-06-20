@@ -4,3 +4,9 @@ export interface ICita {
   imagen: string;
   direccionPersonaje: string;
 }
+
+export interface InputCita{
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder: string;
+}
