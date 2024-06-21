@@ -12,6 +12,7 @@ import {
 interface NoticiaCardProps {
     n: INoticiasNormalizadas;
     setModal: (value: INoticiasNormalizadas | null) => void;
+    key: number;
 
 }
 //Tanto en este componente como en NoticiaModalPremium y NoticiaModalLibre se utilizan interfaces para las props 
